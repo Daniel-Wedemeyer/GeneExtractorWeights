@@ -97,7 +97,7 @@ public static class GeneExtractorPatch
 
             try
             {
-                result = settings.Genes[g.def.defName].Weight;
+                result = settings.GenesDictionary[g.def.defName].Weight;
             }
             catch (Exception e)
             {
@@ -156,7 +156,7 @@ public static class GeneExtractorPatch
         }
 
         if (pawn.genes.GenesListForReading.Any<Gene>((Predicate<Gene>)(x =>
-                settings.Genes[x.def.defName].Weight > 0)) != true)
+                settings.GenesDictionary[x.def.defName].Weight > 0)) != true)
         {
             __result = (AcceptanceReport)"PawnHasNoNonArchiteGenes".Translate(pawn.Named("PAWN"));
             return false;

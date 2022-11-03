@@ -35,43 +35,45 @@ public class GeneWeight : IExposable
 
 public class GeneExtractorWeightsSettings : ModSettings
 {
-    private Dictionary<string, GeneWeight> _genes = new();
+    private Dictionary<string, GeneWeight> _genesDictionary = new();
+    private List<GeneWeight> _genes = new();
 
     internal bool _ignoreMetabolismLimit;
     internal bool _isInitialized;
 
-    public IReadOnlyDictionary<string, GeneWeight> Genes => _genes;
+    public IReadOnlyDictionary<string, GeneWeight> GenesDictionary => _genesDictionary;
+    public IReadOnlyList<GeneWeight> Genes => _genes;
 
     public bool IgnoreMetabolismLimit => _ignoreMetabolismLimit;
 
     internal void AddGene(GeneWeight gene)
     {
-        _genes[gene.GeneDefName] = gene;
+        _genesDictionary[gene.GeneDefName] = gene;
     }
 
     public void InitializeGenes()
     {
         foreach (var gene in GeneExtractorWeights.GenesInOrder)
         {
-            if (Genes.ContainsKey(gene.defName))
+            if (GenesDictionary.ContainsKey(gene.defName))
                 continue;
 
             AddGene(new GeneWeight(gene.defName, GetDefaultWeight(gene)));
         }
 
-        foreach (var gene in Genes.Values.ToList())
+        foreach (var gene in GenesDictionary.Values.ToList())
             if (GeneExtractorWeights.GenesInOrder.All(g => g.defName != gene.GeneDefName))
             {
                 Log.Warning(
                     $"GeneExtractorWeights: Gene {gene.GeneDefName} is not in the list of genes. Removing it from the list.");
-                _genes.Remove(gene.GeneDefName);
+                _genesDictionary.Remove(gene.GeneDefName);
             }
 
-        _genes = _genes
+        _genesDictionary = _genesDictionary
             .OrderBy(g => GeneExtractorWeights.GenesInOrder.IndexOf(GeneExtractorWeights.GenesInOrder.First(gg =>
                 string.Equals(gg.defName, g.Value.GeneDefName, StringComparison.Ordinal))))
             .ToDictionary(g => g.Key, g => g.Value);
-
+        _genes = _genesDictionary.Values.ToList();
         _isInitialized = true;
     }
 
@@ -84,17 +86,17 @@ public class GeneExtractorWeightsSettings : ModSettings
     {
         Scribe_Values.Look(ref _ignoreMetabolismLimit, nameof(IgnoreMetabolismLimit));
 
-        var genes = Genes.Values.ToList();
-        Scribe_Collections.Look(ref genes, nameof(Genes), LookMode.Deep);
+        var genes = GenesDictionary.Values.ToList();
+        Scribe_Collections.Look(ref genes, nameof(GenesDictionary), LookMode.Deep);
 
-        _genes = genes.ToDictionary(g => g.GeneDefName);
+        _genesDictionary = genes.ToDictionary(g => g.GeneDefName);
 
         base.ExposeData();
     }
 
     public void ResetToDefault()
     {
-        foreach (var gene in Genes.Values)
+        foreach (var gene in GenesDictionary.Values)
         {
             var geneDef = DefDatabase<GeneDef>.GetNamed(gene.GeneDefName);
             gene.Weight = GetDefaultWeight(geneDef);
