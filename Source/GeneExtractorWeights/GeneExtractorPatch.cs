@@ -109,4 +109,61 @@ public static class GeneExtractorPatch
 
         return false;
     }
+
+    [HarmonyPatch(typeof(Building_GeneExtractor), nameof(Building_GeneExtractor.CanAcceptPawn))]
+    [HarmonyPrefix]
+    public static bool CanAcceptPawn(ref AcceptanceReport __result, Building_GeneExtractor __instance, Pawn pawn)
+    {
+        var settings = GetSettings();
+        settings.InitializeGenes();
+        
+        var selectedPawn = typeof(Building_GeneExtractor).GetField("selectedPawn", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(__instance);
+
+        if (!pawn.IsColonist && !pawn.IsSlaveOfColony && !pawn.IsPrisonerOfColony)
+        {
+            __result = (AcceptanceReport)false;
+            return false;
+        }
+
+        if (selectedPawn != null && selectedPawn != pawn)
+        {
+            __result = (AcceptanceReport)false;
+            return false;
+        }
+
+        if (!pawn.RaceProps.Humanlike || pawn.IsQuestLodger())
+        {
+            __result = (AcceptanceReport)false;
+            return false;
+        }
+
+        if (!__instance.PowerOn)
+        {
+            __result = (AcceptanceReport)"NoPower".Translate().CapitalizeFirst();
+            return false;
+        }
+
+        if (__instance.innerContainer.Count > 0)
+        {
+            __result = (AcceptanceReport)"Occupied".Translate();
+            return false;
+        }
+
+        if (pawn.genes == null || !pawn.genes.GenesListForReading.Any<Gene>())
+        {
+            __result = (AcceptanceReport)"PawnHasNoGenes".Translate(pawn.Named("PAWN"));
+            return false;
+        }
+
+        if (pawn.genes.GenesListForReading.Any<Gene>((Predicate<Gene>)(x =>
+                settings.Genes[x.def.defName].Weight > 0)) != true)
+        {
+            __result = (AcceptanceReport)"PawnHasNoNonArchiteGenes".Translate(pawn.Named("PAWN"));
+            return false;
+        }
+        __result = pawn.health.hediffSet.HasHediff(HediffDefOf.XenogerminationComa) ? (AcceptanceReport)"InXenogerminationComa".Translate() : (AcceptanceReport)true;
+        Log.Message("Hello World");
+        return false;
+    }
+
 }

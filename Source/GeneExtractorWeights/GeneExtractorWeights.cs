@@ -12,7 +12,7 @@ public class GeneExtractorWeights : Mod
 {
     private static List<GeneDef> cachedGeneDefsInOrder;
     private readonly GeneExtractorWeightsSettings _settings;
-    private List<GeneWeight> _genes;
+    //private List<GeneWeight> _genes;
     private float _scrollHeight;
 
     private Vector2 _scrollPosition = new(0, 0);
@@ -50,14 +50,14 @@ public class GeneExtractorWeights : Mod
     {
         if (!_settings._isInitialized) _settings.InitializeGenes();
 
-        if (_genes is null)
+        /*if (_genes is null)
         {
             _genes = _settings.Genes.Values.ToList();
             _genes.Sort((a, b) => GenesInOrder.IndexOf(GenesInOrder.First(g =>
                 string.Equals(g.defName, a.GeneDefName, StringComparison.Ordinal))) - GenesInOrder.IndexOf(
                 GenesInOrder.First(g =>
                     string.Equals(g.defName, b.GeneDefName, StringComparison.Ordinal))));
-        }
+        }*/
 
         const float geneIconSize = 90;
 
@@ -71,7 +71,7 @@ public class GeneExtractorWeights : Mod
 
         float y = 0;
         var left = true;
-        foreach (var gene in _genes)
+        foreach (var gene in _settings.Genes.Values)
         {
             var geneDef = DefDatabase<GeneDef>.GetNamedSilentFail(gene.GeneDefName);
             if (geneDef == null) continue;

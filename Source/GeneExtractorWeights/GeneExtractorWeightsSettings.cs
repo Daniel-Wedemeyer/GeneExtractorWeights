@@ -84,7 +84,7 @@ public class GeneExtractorWeightsSettings : ModSettings
     {
         Scribe_Values.Look(ref _ignoreMetabolismLimit, nameof(IgnoreMetabolismLimit));
 
-        var genes = Genes.Values.Select(g => new GeneWeight(g.GeneDefName, g.Weight)).ToList();
+        var genes = Genes.Values.ToList();
         Scribe_Collections.Look(ref genes, nameof(Genes), LookMode.Deep);
 
         _genes = genes.ToDictionary(g => g.GeneDefName);
