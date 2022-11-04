@@ -162,7 +162,6 @@ public static class GeneExtractorPatch
             return false;
         }
         __result = pawn.health.hediffSet.HasHediff(HediffDefOf.XenogerminationComa) ? (AcceptanceReport)"InXenogerminationComa".Translate() : (AcceptanceReport)true;
-        Log.Message("Hello World");
         return false;
     }
 
